@@ -23,9 +23,9 @@ class BESTGAMEEVER_API IMouseResponsive
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 	UFUNCTION(BlueprintNativeEvent, Category="MouseResponsive")
-	void OnMouseHover();
+	bool OnMouseHover();
 	UFUNCTION(BlueprintNativeEvent, Category="MouseResponsive")
-	void OnMouseHoverStop();
+	bool OnMouseHoverStop();
 	UFUNCTION(BlueprintNativeEvent, Category="MouseResponsive")
-	void OnMouseClick();
+	bool OnMouseClick();
 };

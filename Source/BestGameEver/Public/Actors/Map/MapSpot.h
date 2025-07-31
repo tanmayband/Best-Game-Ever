@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Interfaces/MouseResponsive.h"
+#include "Utils/Enums.h"
 #include "MapSpot.generated.h"
 
 UCLASS()
@@ -30,11 +31,16 @@ public:
 	class UStaticMeshComponent* Mesh;
 
 private:
-	// bool 
+	EMapSpotState CurrentState;
 	
 protected:
-	virtual void OnMouseHover_Implementation() override;
-	virtual void OnMouseHoverStop_Implementation() override;
-	virtual void OnMouseClick_Implementation() override;
+	virtual bool OnMouseHover_Implementation() override;
+	virtual bool OnMouseHoverStop_Implementation() override;
+	virtual bool OnMouseClick_Implementation() override;
+
+	void UpdateState(const EMapSpotState newState);
+	bool IsDisabled();
+	UFUNCTION(BlueprintNativeEvent)
+	void ToggleActivate(const bool activate, const bool fromClick = false);
 
 };

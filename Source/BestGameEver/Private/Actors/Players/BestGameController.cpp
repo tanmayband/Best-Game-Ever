@@ -4,12 +4,14 @@
 #include "Actors/Players/BestGameController.h"
 
 #include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
 #include "Interfaces/MouseResponsive.h"
 
 ABestGameController::ABestGameController()
 {
 	bShowMouseCursor = true;
 	bEnableClickEvents = true;
+	// AutoReceiveInput = EAutoReceiveInput::Player0;
 }
 
 void ABestGameController::Tick(float DeltaTime)
@@ -22,9 +24,15 @@ void ABestGameController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
 
+	if (UEnhancedInputLocalPlayerSubsystem* inputSubsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
+	{
+		inputSubsystem->AddMappingContext(InputMappingContext, 0);
+	}
+
 	if (UEnhancedInputComponent* enhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent))
 	{
-		enhancedInputComponent->BindAction(InteractOnMapAction, ETriggerEvent::Triggered, this, &ThisClass::ClickUnderMouse);
+		UE_LOG(LogTemp, Log, TEXT("Setup enhanced InputComponent"));
+		enhancedInputComponent->BindAction(InteractOnMapAction, ETriggerEvent::Started, this, &ThisClass::ClickUnderMouse);
 	}
 }
 
@@ -71,6 +79,7 @@ void ABestGameController::TraceUnderMouse()
 
 void ABestGameController::ClickUnderMouse()
 {
+	UE_LOG(LogTemp, Log, TEXT("ClickUnderMouse"));
 	if(CurrentMouseResponsive)
 	{
 		IMouseResponsive::Execute_OnMouseClick(CurrentMouseResponsive.GetObject());

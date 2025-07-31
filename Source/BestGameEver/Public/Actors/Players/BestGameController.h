@@ -29,6 +29,9 @@ public:
 	float MouseTraceLength = 2000.f;
 
 	UPROPERTY(EditAnywhere)
+	class UInputMappingContext* InputMappingContext;
+	
+	UPROPERTY(EditAnywhere)
 	class UInputAction* InteractOnMapAction;
 
 private:

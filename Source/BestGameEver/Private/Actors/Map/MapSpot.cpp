@@ -13,6 +13,7 @@ AMapSpot::AMapSpot()
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	Mesh->SetupAttachment(SceneRoot);
 
+	UpdateState(EMapSpotState::Ready);
 }
 
 // Called when the game starts or when spawned
@@ -22,19 +23,57 @@ void AMapSpot::BeginPlay()
 	
 }
 
-void AMapSpot::OnMouseHover_Implementation()
+bool AMapSpot::OnMouseHover_Implementation()
 {
-	UE_LOG(LogTemp, Log, TEXT("Hovering over %s"), *GetDebugName(this));
+	if(CurrentState == EMapSpotState::Ready)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Hovering over %s"), *GetDebugName(this));
+		UpdateState(EMapSpotState::Hovered);
+		return true;
+	}
+	return false;
 }
 
-void AMapSpot::OnMouseHoverStop_Implementation()
+bool AMapSpot::OnMouseHoverStop_Implementation()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Hovering away from %s"), *GetDebugName(this));
+	if(CurrentState == EMapSpotState::Hovered)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Hovering away from %s"), *GetDebugName(this));
+		UpdateState(EMapSpotState::Ready);
+		return true;
+	}
+	return false;
 }
 
-void AMapSpot::OnMouseClick_Implementation()
+bool AMapSpot::OnMouseClick_Implementation()
 {
-	UE_LOG(LogTemp, Log, TEXT("Clicked on %s"), *GetDebugName(this));
+	if(!IsDisabled())
+	{
+		UE_LOG(LogTemp, Log, TEXT("Clicked on %s"), *GetDebugName(this));
+		if(CurrentState != EMapSpotState::Activated)
+			ToggleActivate(true, true);
+		else
+			ToggleActivate(false, true);
+		
+		return true;
+	}
+	return false;
+}
+
+void AMapSpot::UpdateState(const EMapSpotState newState)
+{
+	CurrentState = newState;
+}
+
+bool AMapSpot::IsDisabled()
+{
+	return CurrentState == EMapSpotState::Disabled;
+}
+
+void AMapSpot::ToggleActivate_Implementation(const bool activate, const bool fromClick)
+{
+	EMapSpotState deactivatedState = fromClick ? EMapSpotState::Hovered : EMapSpotState::Ready;
+	UpdateState(activate ? EMapSpotState::Activated : deactivatedState);
 }
 
 // Called every frame
