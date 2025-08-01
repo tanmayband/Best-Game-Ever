@@ -3,7 +3,7 @@
 #include "Enums.generated.h"
 
 UENUM()
-enum EMapNodeState : uint8
+enum class EMapNodeState : uint8
 {
 	Disabled,
 	Ready,
@@ -11,8 +11,23 @@ enum EMapNodeState : uint8
 	Activated
 };
 
+UENUM(BlueprintType)
+enum class EMapNodeType : uint8
+{
+	Start,
+	Pitspot,
+	End
+};
+
 UENUM()
-enum EControllerAction : uint8
+enum class EMapPathwayState : uint8
+{
+	Building,
+	Ready
+};
+
+UENUM()
+enum class EControllerAction : uint8
 {
 	Nothing,
 	BuildingPathway

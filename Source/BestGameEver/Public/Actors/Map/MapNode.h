@@ -34,6 +34,9 @@ public:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class AMapPathway> MapPathwayClass;
 
+	UPROPERTY(EditAnywhere)
+	EMapNodeType NodeType = EMapNodeType::Pitspot;
+
 private:
 	EMapNodeState CurrentState;
 	UPROPERTY()

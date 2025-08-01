@@ -28,18 +28,21 @@ void AMapNode::BeginPlay()
 
 void AMapNode::StartBuildingPathway()
 {
-	UE_LOG(LogTemp, Log, TEXT("StartBuildingPathway"));
+	// UE_LOG(LogTemp, Log, TEXT("StartBuildingPathway"));
 	// spawn a pathway
 	if(CurrentBuildingPathway)
 		DeleteCurrentPathway();
 
-	CurrentBuildingPathway = GetWorld()->SpawnActor<AMapPathway>(
-	   MapPathwayClass,
-	   GetActorTransform()
-   );
-	CurrentBuildingPathway->SetStartNode(this);
+	if(MapPathwayClass)
+	{
+		CurrentBuildingPathway = GetWorld()->SpawnActor<AMapPathway>(
+		  MapPathwayClass,
+		  GetActorTransform()
+	  );
+		CurrentBuildingPathway->SetStartNode(this);
 
-	UpdateActivateStatus();
+		UpdateActivateStatus();
+	}
 }
 
 void AMapNode::UpdatePathwayEndPoint(const FVector& location)
@@ -68,11 +71,11 @@ void AMapNode::StopBuildingPathway()
 		// if yes, check if that node is already connected to me
 		// if no, add data to everything
 	// if no, destroy pathway
-	if(CurrentBuildingPathway && !CurrentBuildingPathway->IsPathwayObstructed())
+	if(CurrentBuildingPathway)
 	{
 		FPathwayNodes pathwayNodes;
 		CurrentBuildingPathway->GetConnectedNodes(pathwayNodes);
-		if(pathwayNodes.EndNode)
+		if(!CurrentBuildingPathway->IsPathwayObstructed() && pathwayNodes.EndNode)
 		{
 			bool isUnconnectedNode = true;
 			for(AMapPathway* nodePathway : ConnectedPathways)
@@ -104,14 +107,6 @@ void AMapNode::StopBuildingPathway()
 
 void AMapNode::UnlinkPathway(AMapPathway* pathway)
 {
-	if(pathway)
-	{
-		UE_LOG(LogTemp, Log, TEXT("UnlinkPathway pathway exists"));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Log, TEXT("UnlinkPathway no pathway"));
-	}
 	if(ConnectedPathways.Contains(pathway))
 		ConnectedPathways.Remove(pathway);
 	UpdateActivateStatus();
@@ -132,7 +127,7 @@ bool AMapNode::OnMouseHover_Implementation()
 {
 	if(CurrentState == EMapNodeState::Ready)
 	{
-		UE_LOG(LogTemp, Log, TEXT("Hovering over %s"), *GetDebugName(this));
+		// UE_LOG(LogTemp, Log, TEXT("Hovering over %s"), *GetDebugName(this));
 		UpdateState(EMapNodeState::Hovered);
 		return true;
 	}
@@ -143,7 +138,7 @@ bool AMapNode::OnMouseHoverStop_Implementation()
 {
 	if(CurrentState == EMapNodeState::Hovered)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Hovering away from %s"), *GetDebugName(this));
+		// UE_LOG(LogTemp, Warning, TEXT("Hovering away from %s"), *GetDebugName(this));
 		UpdateState(EMapNodeState::Ready);
 		return true;
 	}
@@ -154,7 +149,7 @@ bool AMapNode::OnMouseClick_Implementation()
 {
 	if(!IsDisabled())
 	{
-		UE_LOG(LogTemp, Log, TEXT("Clicked on %s"), *GetDebugName(this));
+		// UE_LOG(LogTemp, Log, TEXT("Clicked on %s"), *GetDebugName(this));
 		
 		return true;
 	}
@@ -208,7 +203,6 @@ bool AMapNode::ArePathwaysSame(AMapPathway* pathway1, AMapPathway* pathway2)
 
 void AMapNode::DeleteCurrentPathway()
 {
-	UE_LOG(LogTemp, Warning, TEXT("DeleteCurrentPathway"));
 	GetWorld()->DestroyActor(CurrentBuildingPathway);
 	CurrentBuildingPathway = nullptr;
 	UpdateActivateStatus();

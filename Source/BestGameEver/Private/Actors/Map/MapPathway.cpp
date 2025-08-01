@@ -22,6 +22,8 @@ AMapPathway::AMapPathway()
 void AMapPathway::BeginPlay()
 {
 	Super::BeginPlay();
+
+	CurrentState = EMapPathwayState::Building;
 	
 	PathwayMesh->OnComponentBeginOverlap.AddUniqueDynamic(this, &ThisClass::OnOverlap);
 	PathwayMesh->OnComponentEndOverlap.AddUniqueDynamic(this, &ThisClass::OnOverlapEnd);
@@ -55,6 +57,7 @@ bool AMapPathway::IsPathwayObstructed()
 
 void AMapPathway::PathwayReady_Implementation()
 {
+	CurrentState = EMapPathwayState::Ready;
 	ToggleTraceCollision(true);
 }
 
@@ -83,12 +86,14 @@ void AMapPathway::ToggleTraceCollision(const bool active)
 
 void AMapPathway::OnOverlap(UPrimitiveComponent* overlappedComponent, AActor* otherActor, UPrimitiveComponent* otherComp, int32 otherBodyIndex, bool bFromSweep, const FHitResult& sweepResult)
 {
-	CheckOverlappingActors();
+	if(CurrentState != EMapPathwayState::Ready)
+		CheckOverlappingActors();
 }
 
 void AMapPathway::OnOverlapEnd(UPrimitiveComponent* overlappedComponent, AActor* otherActor, UPrimitiveComponent* otherComp, int32 otherBodyIndex)
 {
-	CheckOverlappingActors();
+	if(CurrentState != EMapPathwayState::Ready)
+		CheckOverlappingActors();
 }
 
 void AMapPathway::CheckOverlappingActors()
@@ -97,15 +102,13 @@ void AMapPathway::CheckOverlappingActors()
 	PathwayMesh->GetOverlappingActors(currentOverlappingActors);
 	for(const AActor* overlappingActor : currentOverlappingActors)
 	{
-		if(overlappingActor != ConnectedNodes.StartNode && overlappingActor != ConnectedNodes.EndNode)
+		if(!(overlappingActor->IsA<AMapNode>() || overlappingActor->IsA<AMapPathway>()))
 		{
 			UpdatePathwayObstructed(true);
 			break;
 		}
-		else
-		{
-			UpdatePathwayObstructed(false);
-		}
+		
+		UpdatePathwayObstructed(false);
 	}
 }
 

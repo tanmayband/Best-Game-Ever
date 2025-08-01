@@ -30,6 +30,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	class UStaticMeshComponent* PathwayMesh;
 private:
+	EMapPathwayState CurrentState;
 	uint16 NumPathsAwayFromEnd = 0;
 	UPROPERTY()
 	FPathwayNodes ConnectedNodes;

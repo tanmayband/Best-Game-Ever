@@ -32,7 +32,7 @@ void ABestGameController::SetupInputComponent()
 
 	if (UEnhancedInputComponent* enhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent))
 	{
-		UE_LOG(LogTemp, Log, TEXT("Setup enhanced InputComponent"));
+		// UE_LOG(LogTemp, Log, TEXT("Setup enhanced InputComponent"));
 		enhancedInputComponent->BindAction(InteractOnMapAction, ETriggerEvent::Started, this, &ThisClass::ClickUnderMouse);
 	}
 }
@@ -114,23 +114,28 @@ void ABestGameController::TraceUnderMouse()
 
 void ABestGameController::ClickUnderMouse()
 {
-	UE_LOG(LogTemp, Log, TEXT("ClickUnderMouse"));
-	if(CurrentMouseResponsive)
+	// UE_LOG(LogTemp, Log, TEXT("ClickUnderMouse"));
+
+	if(CurrentAction == EControllerAction::BuildingPathway)
 	{
-		if(CurrentAction == EControllerAction::BuildingPathway)
+		if(CurrentMapNodeBuilding)
 		{
-			if(CurrentMapNodeBuilding)
+			CurrentAction = EControllerAction::Nothing;
+			if(CurrentMouseResponsive)
 			{
-				CurrentAction = EControllerAction::Nothing;
 				if(AMapNode* newMapNode = Cast<AMapNode>(CurrentMouseResponsive.GetObject()))
 				{
 					CurrentMapNodeBuilding->UpdatePathwayEndNode(newMapNode);
 				}
-				CurrentMapNodeBuilding->StopBuildingPathway();
-				CurrentMapNodeBuilding = nullptr;
 			}
+			
+			CurrentMapNodeBuilding->StopBuildingPathway();
+			CurrentMapNodeBuilding = nullptr;
 		}
-		else
+	}
+	else
+	{
+		if(CurrentMouseResponsive)
 		{
 			CurrentMapNodeBuilding = Cast<AMapNode>(CurrentMouseResponsive.GetObject());
 			if(CurrentMapNodeBuilding)
@@ -138,8 +143,12 @@ void ABestGameController::ClickUnderMouse()
 				CurrentAction = EControllerAction::BuildingPathway;
 				CurrentMapNodeBuilding->StartBuildingPathway();
 				CurrentMapNodeBuilding->UpdatePathwayEndPoint(CurrentHitResult.ImpactPoint);
-			}			
+			}
 		}
+	}
+	
+	if(CurrentMouseResponsive)
+	{
 		IMouseResponsive::Execute_OnMouseClick(CurrentMouseResponsive.GetObject());
 	}
 }
