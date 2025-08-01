@@ -5,6 +5,7 @@
 
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Actors/Map/MapNode.h"
 #include "Interfaces/MouseResponsive.h"
 
 ABestGameController::ABestGameController()
@@ -43,32 +44,71 @@ void ABestGameController::TraceUnderMouse()
 	{
 		{
 			const FVector traceEnd = mouseWorldPosition + (mouseWorldDirection * MouseTraceLength);
-			FHitResult traceHitResult;
 			world->LineTraceSingleByChannel(
-				traceHitResult,
+				CurrentHitResult,
 				mouseWorldPosition,
 				traceEnd,
 				ECC_Visibility
 			);
 
 			// DrawDebugLine(GetWorld(), mouseWorldPosition, traceEnd, FColor::Black, true);
-
-			if(traceHitResult.bBlockingHit)
+			AActor* newHitActor = CurrentHitResult.GetActor();
+			AActor* currentActor = Cast<AActor>(CurrentMouseResponsive.GetObject());
+			// For visual effects
+			if(!CurrentHitResult.bBlockingHit)
 			{
-				AActor* newHitActor = traceHitResult.GetActor();
-				AActor* currentActor = CurrentMouseResponsive ? Cast<AActor>(CurrentMouseResponsive.GetObject()) : nullptr;
-				
-				if(newHitActor != currentActor)
+				// hovered over nothing?
+				if(currentActor)
 				{
-					if(CurrentMouseResponsive)
+					IMouseResponsive::Execute_OnMouseHoverStop(currentActor);
+					CurrentMouseResponsive = nullptr;
+				}
+			}
+			else
+			{
+				// hover over new thing?
+				if(currentActor && (currentActor != newHitActor))
+					IMouseResponsive::Execute_OnMouseHoverStop(currentActor);
+				
+				if(newHitActor->Implements<UMouseResponsive>())
+				{
+					CurrentMouseResponsive = newHitActor;
+					IMouseResponsive::Execute_OnMouseHover(newHitActor);
+				}
+				else
+				{
+					CurrentMouseResponsive = nullptr;
+				}
+			}
+
+			// Process map elements
+			//
+			// hovered over nothing?
+			if(!CurrentHitResult.bBlockingHit)
+			{
+				if(CurrentAction == EControllerAction::BuildingPathway)
+				{
+					if(CurrentMapNodeBuilding)
 					{
-						IMouseResponsive::Execute_OnMouseHoverStop(currentActor);
-						CurrentMouseResponsive = nullptr;
+						CurrentMapNodeBuilding->UpdatePathwayEndNode(nullptr);
 					}
-					if(newHitActor->Implements<UMouseResponsive>())
+				}
+			}
+			else
+			{				
+				if(newHitActor)
+				{
+					if(CurrentAction == EControllerAction::BuildingPathway)
 					{
-						CurrentMouseResponsive = newHitActor;
-						IMouseResponsive::Execute_OnMouseHover(newHitActor);
+						if(CurrentMapNodeBuilding)
+						{
+							CurrentMapNodeBuilding->UpdatePathwayEndPoint(CurrentHitResult.ImpactPoint);
+							// hover over new thing?
+							// if(CurrentMapNodeBuilding != newHitActor)
+							// {
+								
+							// }
+						}
 					}
 				}
 				// UE_LOG(LogTemp, Log, TEXT("%s"), *GetDebugName(traceHitResult.GetActor()));
@@ -82,6 +122,29 @@ void ABestGameController::ClickUnderMouse()
 	UE_LOG(LogTemp, Log, TEXT("ClickUnderMouse"));
 	if(CurrentMouseResponsive)
 	{
+		if(CurrentAction == EControllerAction::BuildingPathway)
+		{
+			if(CurrentMapNodeBuilding)
+			{
+				CurrentAction = EControllerAction::Nothing;
+				if(AMapNode* newMapNode = Cast<AMapNode>(CurrentMouseResponsive.GetObject()))
+				{
+					CurrentMapNodeBuilding->UpdatePathwayEndNode(newMapNode);
+				}
+				CurrentMapNodeBuilding->StopBuildingPathway();
+				CurrentMapNodeBuilding = nullptr;
+			}
+		}
+		else
+		{
+			CurrentMapNodeBuilding = Cast<AMapNode>(CurrentMouseResponsive.GetObject());
+			if(CurrentMapNodeBuilding)
+			{
+				CurrentAction = EControllerAction::BuildingPathway;
+				CurrentMapNodeBuilding->StartBuildingPathway();
+				CurrentMapNodeBuilding->UpdatePathwayEndPoint(CurrentHitResult.ImpactPoint);
+			}			
+		}
 		IMouseResponsive::Execute_OnMouseClick(CurrentMouseResponsive.GetObject());
 	}
 }

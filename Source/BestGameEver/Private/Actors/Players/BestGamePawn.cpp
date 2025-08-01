@@ -9,19 +9,18 @@
 // Sets default values
 ABestGamePawn::ABestGamePawn()
 {
- 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 
-	SceneRoot = CreateDefaultSubobject<USceneComponent>(TEXT("SceneRoot"));
+	SceneRoot = CreateDefaultSubobject<USceneComponent>("SceneRoot");
 	SetRootComponent(SceneRoot);
 	
-	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
+	CameraBoom = CreateDefaultSubobject<USpringArmComponent>("CameraBoom");
 	CameraBoom->SetupAttachment(SceneRoot);
-	CameraBoom->TargetArmLength = 800.f;
+	CameraBoom->TargetArmLength = 2000.f;
 	CameraBoom->bDoCollisionTest = false;
-	CameraBoom->SetRelativeRotation(FRotator(-50.f, 0, 0));
+	CameraBoom->SetRelativeRotation(FRotator(-80.f, 0, 0));
 	
-	MainCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("MainCamera"));
+	MainCamera = CreateDefaultSubobject<UCameraComponent>("MainCamera");
 	MainCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	
 	AutoPossessPlayer = EAutoReceiveInput::Player0;

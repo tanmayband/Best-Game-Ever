@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "Interfaces/MouseResponsive.h"
+#include "Utils/Enums.h"
 #include "BestGameController.generated.h"
 
 /**
@@ -20,13 +21,9 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupInputComponent() override;
 
-private:
-	void TraceUnderMouse();
-	void ClickUnderMouse();
-
 public:
 	UPROPERTY(EditAnywhere)
-	float MouseTraceLength = 2000.f;
+	float MouseTraceLength = 3000.f;
 
 	UPROPERTY(EditAnywhere)
 	class UInputMappingContext* InputMappingContext;
@@ -37,4 +34,13 @@ public:
 private:
 	UPROPERTY()
 	TScriptInterface<IMouseResponsive> CurrentMouseResponsive;
+	FHitResult CurrentHitResult;
+	UPROPERTY()
+	class AMapNode* CurrentMapNodeBuilding;
+
+	EControllerAction CurrentAction;
+
+private:
+	void TraceUnderMouse();
+	void ClickUnderMouse();
 };

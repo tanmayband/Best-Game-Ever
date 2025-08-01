@@ -28,4 +28,6 @@ public:
 	bool OnMouseHoverStop();
 	UFUNCTION(BlueprintNativeEvent, Category="MouseResponsive")
 	bool OnMouseClick();
+	UFUNCTION(BlueprintNativeEvent, Category="MouseResponsive")
+	bool OnMouseClickStop();
 };
