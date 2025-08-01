@@ -61,11 +61,12 @@ protected:
 	void UpdateState(const EMapNodeState newState);
 	bool IsDisabled();
 	UFUNCTION(BlueprintNativeEvent)
-	void ToggleActivate(const bool activate, const bool fromClick = false);
+	void ToggleActivate(const bool activate);
 
 private:
 	void OrientPathway(const FVector& location);
 	bool ArePathwaysSame(AMapPathway* pathway1, AMapPathway* pathway2);
 	void DeleteCurrentPathway();
+	void UpdateActivateStatus();
 
 };

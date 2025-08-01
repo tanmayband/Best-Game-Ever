@@ -14,13 +14,17 @@ AMapPathway::AMapPathway()
 	PathwayMesh = CreateDefaultSubobject<UStaticMeshComponent>("PathwayMesh");
 	PathwayMesh->SetupAttachment(SceneRoot);
 	PathwayMesh->SetRelativeLocation(FVector(50.f, 0, 0));
-	ToggleCollision(false);
+	PathwayMesh->SetCollisionResponseToAllChannels(ECR_Overlap);
+	ToggleTraceCollision(false);
 }
 
 // Called when the game starts or when spawned
 void AMapPathway::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	PathwayMesh->OnComponentBeginOverlap.AddUniqueDynamic(this, &ThisClass::OnOverlap);
+	PathwayMesh->OnComponentEndOverlap.AddUniqueDynamic(this, &ThisClass::OnOverlapEnd);
 	
 }
 
@@ -44,22 +48,64 @@ void AMapPathway::SetEndNode(AMapNode* newNode)
 	ConnectedNodes.EndNode = newNode;
 }
 
+bool AMapPathway::IsPathwayObstructed()
+{
+	return IsObstructed;
+}
+
+void AMapPathway::PathwayReady_Implementation()
+{
+	ToggleTraceCollision(true);
+}
+
+void AMapPathway::UpdatePathwayObstructed_Implementation(bool obstructed)
+{
+	IsObstructed = obstructed;
+}
+
 bool AMapPathway::OnMouseClick_Implementation()
 {
 	Destroy();
 	return true;
 }
 
-
-void AMapPathway::ToggleCollision(const bool active)
+void AMapPathway::ToggleTraceCollision(const bool active)
 {
 	if(active)
 	{
-		PathwayMesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		PathwayMesh->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Block);
 	}
 	else
 	{
-		PathwayMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		PathwayMesh->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Ignore);
+	}
+}
+
+void AMapPathway::OnOverlap(UPrimitiveComponent* overlappedComponent, AActor* otherActor, UPrimitiveComponent* otherComp, int32 otherBodyIndex, bool bFromSweep, const FHitResult& sweepResult)
+{
+	CheckOverlappingActors();
+}
+
+void AMapPathway::OnOverlapEnd(UPrimitiveComponent* overlappedComponent, AActor* otherActor, UPrimitiveComponent* otherComp, int32 otherBodyIndex)
+{
+	CheckOverlappingActors();
+}
+
+void AMapPathway::CheckOverlappingActors()
+{
+	TArray<AActor*> currentOverlappingActors;
+	PathwayMesh->GetOverlappingActors(currentOverlappingActors);
+	for(const AActor* overlappingActor : currentOverlappingActors)
+	{
+		if(overlappingActor != ConnectedNodes.StartNode && overlappingActor != ConnectedNodes.EndNode)
+		{
+			UpdatePathwayObstructed(true);
+			break;
+		}
+		else
+		{
+			UpdatePathwayObstructed(false);
+		}
 	}
 }
 
@@ -74,7 +120,9 @@ void AMapPathway::Destroyed()
 {
 	Super::Destroyed();
 
-	ConnectedNodes.StartNode->UnlinkPathway(this);
-	ConnectedNodes.EndNode->UnlinkPathway(this);
+	if(ConnectedNodes.StartNode)
+		ConnectedNodes.StartNode->UnlinkPathway(this);
+	if(ConnectedNodes.EndNode)
+		ConnectedNodes.EndNode->UnlinkPathway(this);
 }
 

@@ -48,7 +48,7 @@ void ABestGameController::TraceUnderMouse()
 				CurrentHitResult,
 				mouseWorldPosition,
 				traceEnd,
-				ECC_Visibility
+				ECC_GameTraceChannel1
 			);
 
 			// DrawDebugLine(GetWorld(), mouseWorldPosition, traceEnd, FColor::Black, true);
@@ -103,11 +103,6 @@ void ABestGameController::TraceUnderMouse()
 						if(CurrentMapNodeBuilding)
 						{
 							CurrentMapNodeBuilding->UpdatePathwayEndPoint(CurrentHitResult.ImpactPoint);
-							// hover over new thing?
-							// if(CurrentMapNodeBuilding != newHitActor)
-							// {
-								
-							// }
 						}
 					}
 				}

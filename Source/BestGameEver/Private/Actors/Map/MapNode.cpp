@@ -38,6 +38,8 @@ void AMapNode::StartBuildingPathway()
 	   GetActorTransform()
    );
 	CurrentBuildingPathway->SetStartNode(this);
+
+	UpdateActivateStatus();
 }
 
 void AMapNode::UpdatePathwayEndPoint(const FVector& location)
@@ -66,7 +68,7 @@ void AMapNode::StopBuildingPathway()
 		// if yes, check if that node is already connected to me
 		// if no, add data to everything
 	// if no, destroy pathway
-	if(CurrentBuildingPathway)
+	if(CurrentBuildingPathway && !CurrentBuildingPathway->IsPathwayObstructed())
 	{
 		FPathwayNodes pathwayNodes;
 		CurrentBuildingPathway->GetConnectedNodes(pathwayNodes);
@@ -86,6 +88,7 @@ void AMapNode::StopBuildingPathway()
 				AddPathway(CurrentBuildingPathway);
 				pathwayNodes.EndNode->AddPathway(CurrentBuildingPathway);
 				OrientPathway(pathwayNodes.EndNode->GetActorLocation());
+				CurrentBuildingPathway->PathwayReady();
 				CurrentBuildingPathway = nullptr;
 			}
 			else
@@ -109,8 +112,9 @@ void AMapNode::UnlinkPathway(AMapPathway* pathway)
 	{
 		UE_LOG(LogTemp, Log, TEXT("UnlinkPathway no pathway"));
 	}
-	// if(pathway && ConnectedPathways.Contains(pathway))
-	// ConnectedPathways.Remove(pathway);
+	if(ConnectedPathways.Contains(pathway))
+		ConnectedPathways.Remove(pathway);
+	UpdateActivateStatus();
 }
 
 TArray<AMapPathway*> AMapNode::GetConnectedPathways()
@@ -121,6 +125,7 @@ TArray<AMapPathway*> AMapNode::GetConnectedPathways()
 void AMapNode::AddPathway(AMapPathway* pathway)
 {
 	ConnectedPathways.AddUnique(pathway);
+	UpdateActivateStatus();
 }
 
 bool AMapNode::OnMouseHover_Implementation()
@@ -150,10 +155,6 @@ bool AMapNode::OnMouseClick_Implementation()
 	if(!IsDisabled())
 	{
 		UE_LOG(LogTemp, Log, TEXT("Clicked on %s"), *GetDebugName(this));
-		if(CurrentState != EMapNodeState::Activated)
-			ToggleActivate(true, true);
-		else
-			ToggleActivate(false, true);
 		
 		return true;
 	}
@@ -210,12 +211,25 @@ void AMapNode::DeleteCurrentPathway()
 	UE_LOG(LogTemp, Warning, TEXT("DeleteCurrentPathway"));
 	GetWorld()->DestroyActor(CurrentBuildingPathway);
 	CurrentBuildingPathway = nullptr;
+	UpdateActivateStatus();
 }
 
-void AMapNode::ToggleActivate_Implementation(const bool activate, const bool fromClick)
+void AMapNode::UpdateActivateStatus()
 {
-	EMapNodeState deactivatedState = fromClick ? EMapNodeState::Hovered : EMapNodeState::Ready;
-	UpdateState(activate ? EMapNodeState::Activated : deactivatedState);
+	if(ConnectedPathways.Num() > 0 || CurrentBuildingPathway)
+	{
+		ToggleActivate(true);
+	}
+	else
+	{
+		ToggleActivate(false);
+	}
+}
+
+void AMapNode::ToggleActivate_Implementation(const bool activate)
+{
+	// EMapNodeState deactivatedState = fromClick ? EMapNodeState::Hovered : EMapNodeState::Ready;
+	UpdateState(activate ? EMapNodeState::Activated : EMapNodeState::Ready);
 }
 
 // Called every frame
