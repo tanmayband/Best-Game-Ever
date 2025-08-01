@@ -8,6 +8,8 @@
 #include "Utils/Enums.h"
 #include "BestGameController.generated.h"
 
+class AMapNode;
+
 /**
  * 
  */
@@ -36,7 +38,7 @@ private:
 	TScriptInterface<IMouseResponsive> CurrentMouseResponsive;
 	FHitResult CurrentHitResult;
 	UPROPERTY()
-	class AMapNode* CurrentMapNodeBuilding;
+	AMapNode* CurrentMapNodeBuilding;
 
 	EControllerAction CurrentAction;
 

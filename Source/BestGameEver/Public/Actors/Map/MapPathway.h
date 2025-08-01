@@ -43,7 +43,7 @@ public:
 	void SetEndNode(AMapNode* newNode);
 	UFUNCTION(BlueprintNativeEvent)
 	void PathwayReady();
-	FORCEINLINE bool IsPathwayObstructed();
+	FORCEINLINE bool IsPathwayIllegal();
 
 protected:
 	virtual bool OnMouseClick_Implementation() override;

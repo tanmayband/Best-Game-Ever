@@ -3,6 +3,13 @@
 #include "Enums.generated.h"
 
 UENUM()
+enum class EControllerAction : uint8
+{
+	Nothing,
+	BuildingPathway
+};
+
+UENUM()
 enum class EMapNodeState : uint8
 {
 	Disabled,
@@ -27,8 +34,10 @@ enum class EMapPathwayState : uint8
 };
 
 UENUM()
-enum class EControllerAction : uint8
+enum class EMapNavigatorState : uint8
 {
-	Nothing,
-	BuildingPathway
+	Ready,
+	Moving,
+	Paused,
+	Stopped
 };

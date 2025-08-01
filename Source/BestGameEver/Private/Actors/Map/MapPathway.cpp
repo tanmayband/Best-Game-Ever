@@ -50,7 +50,7 @@ void AMapPathway::SetEndNode(AMapNode* newNode)
 	ConnectedNodes.EndNode = newNode;
 }
 
-bool AMapPathway::IsPathwayObstructed()
+bool AMapPathway::IsPathwayIllegal()
 {
 	return IsObstructed;
 }

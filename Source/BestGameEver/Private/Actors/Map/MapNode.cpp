@@ -75,7 +75,7 @@ void AMapNode::StopBuildingPathway()
 	{
 		FPathwayNodes pathwayNodes;
 		CurrentBuildingPathway->GetConnectedNodes(pathwayNodes);
-		if(!CurrentBuildingPathway->IsPathwayObstructed() && pathwayNodes.EndNode)
+		if(!CurrentBuildingPathway->IsPathwayIllegal() && pathwayNodes.EndNode)
 		{
 			bool isUnconnectedNode = true;
 			for(AMapPathway* nodePathway : ConnectedPathways)

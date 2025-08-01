@@ -9,6 +9,8 @@
 // #include "Actors/Map/MapPathway.h"
 #include "MapNode.generated.h"
 
+class AMapPathway;
+
 UCLASS()
 class BESTGAMEEVER_API AMapNode : public AActor, public IMouseResponsive
 {
@@ -32,7 +34,7 @@ public:
 	class UStaticMeshComponent* Mesh;
 
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<class AMapPathway> MapPathwayClass;
+	TSubclassOf<AMapPathway> MapPathwayClass;
 
 	UPROPERTY(EditAnywhere)
 	EMapNodeType NodeType = EMapNodeType::Pitspot;
@@ -40,7 +42,7 @@ public:
 private:
 	EMapNodeState CurrentState;
 	UPROPERTY()
-	class AMapPathway* CurrentBuildingPathway;
+	AMapPathway* CurrentBuildingPathway;
 	UPROPERTY()
 	TArray<AMapPathway*> ConnectedPathways;
 	// UPROPERTY()
